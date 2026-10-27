@@ -1,5 +1,5 @@
 // Cache leve da "casca" do app. Dados sempre vêm do Supabase (nunca ficam em cache).
-const CACHE = 'ofertas-sc-v1';
+const CACHE = 'ofertas-sc-v2';
 const CASCA = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CASCA))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

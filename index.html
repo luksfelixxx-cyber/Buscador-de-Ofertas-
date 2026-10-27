@@ -68,7 +68,8 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
 .resumo .dest button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;color:#fff;padding:6px 8px;margin:0 -8px;border-radius:7px}
 .resumo .dest button:hover{background:rgba(255,255,255,.08)}
 .resumo .dest .pr{white-space:nowrap;font-weight:700}
-.resumo .dest .pr em{font-style:normal;background:var(--red);border-radius:5px;padding:1px 6px;margin-left:6px;font-size:12px}
+.resumo .dest .pr small{font-size:12.5px;font-weight:400;opacity:.7;margin-right:8px}
+.resumo .dest .pr em{font-style:normal;background:#2e8b3e;border-radius:5px;padding:1px 6px;margin-left:6px;font-size:12px}
 .aviso{display:flex;gap:10px;align-items:flex-start;background:var(--amber-soft);color:#6b4200;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:13.5px}
 .resumo .aviso{background:rgba(255,190,90,.16);color:#ffe2b0}
 
@@ -79,7 +80,7 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
 .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .seg button span{opacity:.7;font-weight:500;margin-left:4px}
 .filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.sel-f{height:40px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 10px;min-width:0;flex:1 1 200px;max-width:320px}
+.sel-f{height:40px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 10px;min-width:0;flex:1 1 180px;max-width:290px}
 .tgl{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
 .tgl input{width:18px;height:18px;accent-color:var(--navy)}
 
@@ -103,6 +104,12 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
 .preco .era{font-size:12px;color:var(--muted)}
 .preco .era s{margin-left:3px}
 .preco .eco{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;color:#fff;background:var(--red);border-radius:5px;padding:1px 6px}
+.preco .rot{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.preco .antes{font-size:12.5px;color:var(--muted);margin-top:1px}
+.preco .dif{display:inline-block;margin-top:4px;font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);border-radius:5px;padding:2px 7px}
+.preco .dif.sobe{color:var(--amber);background:var(--amber-soft)}
+.preco .desc{font-size:12px;color:var(--muted);margin-top:4px}
+.preco .desc b{color:var(--ink)}
 .preco .cmp{font-size:12px;color:var(--muted);line-height:1.5}
 .preco .cmp b{color:var(--ink)}
 .ck{width:30px;height:30px;border-radius:8px;border:2px solid #c7d0d8;display:grid;place-items:center;margin-left:4px;color:transparent;background:#fff}
@@ -190,11 +197,15 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
   .fab{bottom:calc(72px + var(--safe-b))}
   .toast{bottom:calc(136px + var(--safe-b))}
   .grid2{grid-template-columns:1fr}
-  .lista .prod{grid-template-columns:34px 1fr auto;padding:11px 10px 11px 4px;align-items:start}
+  .lista .prod{grid-template-columns:34px 1fr;padding:12px 12px 12px 4px;align-items:start}
   .lista .prod .ck{grid-column:1;grid-row:1;margin-top:2px}
-  .lista .prod .star{grid-column:1;grid-row:2;justify-self:center;width:30px;height:30px}
-  .lista .prod>div:nth-of-type(1){grid-column:2;grid-row:1/span 2}
-  .lista .prod .preco{grid-column:3;grid-row:1/span 2}
+  .lista .prod .star{grid-column:1;grid-row:2;justify-self:center;align-self:center;width:30px;height:30px}
+  .lista .prod>div:nth-of-type(1){grid-column:2;grid-row:1}
+  .lista .prod .preco{grid-column:2;grid-row:2;text-align:left;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;white-space:normal;margin-top:8px}
+  .lista .prod .preco .rot,.lista .prod .preco .desc,.lista .prod .preco .cmp{width:100%;margin-top:0}
+  .lista .prod .preco .dif{margin-top:0}
+  .lista .prod .preco .nf{font-size:19px}
+  .resumo .dest .pr small{display:none}
   .meta .ean{display:none}
   .preco .nf{font-size:16px}
   .sel-f{max-width:none;flex:1 1 140px}
@@ -374,7 +385,7 @@ const IC = {
 /* ---------- Estado ---------- */
 const S = {
   api: null, sb: null,
-  aba: 'hoje', tipo: 'menor30', lab: '', cat: '', estoque: true, limite: 300,
+  aba: 'hoje', tipo: 'menor30', lab: '', cat: '', estoque: true, limite: 300, ordem: ls.get('ordem', 'eco'),
   painel: null, itens: null, carregando: false,
   busca: '', resBusca: null,
   vigiados: null,
@@ -520,13 +531,35 @@ async function carregarPainel() {
 async function carregarItens() {
   S.carregando = true; S.itens = null; desenharItens();
   await tentar(async () => {
-    S.itens = await S.api.rpc('listar', { p_tipo: S.tipo, p_lab: S.lab || null, p_cat: S.cat || null, p_estoque: S.estoque, p_busca: null, p_limite: S.limite });
+    S.itens = await S.api.rpc('listar', { p_tipo: S.tipo, p_lab: S.lab || null, p_cat: S.cat || null, p_estoque: S.estoque, p_busca: null, p_limite: S.limite, p_ordem: S.ordem });
   });
   S.carregando = false; desenharItens();
 }
 
 /* ---------- Linha de produto ---------- */
 const naLista = ean => S.lista.some(x => x.ean === ean);
+// Preço anterior: o da planilha anterior; se não mudou, o maior dos 30 dias
+function comparar(it) {
+  let antes = null, rot = '';
+  if (it.ant != null && Math.abs(it.ant - it.nf) >= 0.005) { antes = +it.ant; rot = 'Antes'; }
+  else if (it.ref != null) { antes = +it.ref; rot = 'Maior em 30 dias'; }
+  if (!(antes > 0) || it.nf == null) return null;
+  const dif = antes - it.nf;
+  return { antes, rot, dif, pct: dif / antes * 100 };
+}
+const fmtPct = v => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '%';
+function descHTML(it) {
+  if (it.dc == null) return '';
+  const mudou = it.dc_ant != null && Math.abs(it.dc_ant - it.dc) >= 0.005;
+  return `<div class="desc">Desconto: <b>${fmtPct(it.dc)}</b>${mudou ? ` · antes ${fmtPct(it.dc_ant)}` : ''}</div>`;
+}
+const pctAbs = v => Math.abs(v).toLocaleString('pt-BR', { maximumFractionDigits: Math.abs(v) >= 10 ? 0 : 1 }) + '%';
+function precoHTML(it) {
+  const c = comparar(it);
+  let h = `<div class="rot">Preço atual</div><div class="nf">${brl(it.nf)}</div>`;
+  if (c) h += `<div class="antes">${c.rot}: ${brl(c.antes)}</div><span class="dif ${c.dif < 0 ? 'sobe' : ''}">${c.dif < 0 ? '↑ +' : '↓ −'}${brl(Math.abs(c.dif))} · ${pctAbs(c.pct)}</span>`;
+  return h + descHTML(it);
+}
 function linha(it, modo) {
   const tags = [];
   if (it.menor30) tags.push('<span class="tag t-menor">Menor preço 30 dias</span>');
@@ -540,9 +573,9 @@ function linha(it, modo) {
   if (modo === 'busca') {
     const menor = it.min30 == null ? null : Math.min(it.min30, it.nf);
     const cmp = !it.dias30 ? 'Sem histórico ainda' : it.nf <= it.min30 ? '<b>É o menor preço em 30 dias</b>' : `Menor 30 dias: <b>${brl(menor)}</b>`;
-    preco = `<div class="nf">${brl(it.nf)}</div><div class="cmp">${cmp}</div>`;
+    preco = `<div class="rot">Preço atual</div><div class="nf">${brl(it.nf)}</div><div class="cmp">${cmp}</div>${descHTML(it)}`;
   } else {
-    preco = `<div class="nf">${brl(it.nf)}</div>${it.ref ? `<div class="era">era<s>${brl(it.ref)}</s></div><span class="eco">${pct(it.eco)}</span>` : ''}`;
+    preco = precoHTML(it);
   }
   const on = naLista(it.ean), vig = S.vigSet?.has(it.ean) ?? it.vig;
   return `<div class="prod ${on ? 'marcado' : ''}" data-ean="${esc(it.ean)}">
@@ -559,6 +592,7 @@ const memo = new Map();
 const guardar = arr => (arr || []).forEach(i => memo.set(i.ean, i));
 
 /* ---------- Tela: Ofertas do dia ---------- */
+const ORDENS = [['eco', 'Ordenar: maior economia (%)'], ['dif', 'Ordenar: maior economia (R$)'], ['menor', 'Ordenar: menor preço'], ['maior', 'Ordenar: maior preço'], ['desc', 'Ordenar: maior desconto'], ['nome', 'Ordenar: nome (A-Z)']];
 const TIPOS = [['menor30', 'Menor preço 30 dias'], ['quedas', 'Caíram'], ['voltou', 'Voltou ao estoque'], ['novos', 'Novos']];
 
 function resumoHTML(p) {
@@ -577,7 +611,7 @@ function resumoHTML(p) {
   guardar(p.destaques); guardar(vig);
   const qtd = ehCel() ? 3 : 5;
   const dest = (arr, t) => arr.length ? `<div class="dest"><div class="dest-t">${t}</div>${arr.slice(0, qtd).map(i =>
-    `<button data-act="add" data-ean="${esc(i.ean)}" title="Adicionar à lista"><span class="nm">${esc(i.desc)}</span><span class="pr">${brl(i.nf)}<em>${pct(i.eco)}</em></span></button>`).join('')}</div>` : '';
+    `<button data-act="add" data-ean="${esc(i.ean)}" title="Adicionar à lista"><span class="nm">${esc(i.desc)}</span><span class="pr">${(c => c && c.dif > 0 ? `<small>antes ${brl(c.antes)}</small>${brl(i.nf)}<em>−${brl(c.dif)}</em>` : brl(i.nf))(comparar(i))}</span></button>`).join('')}</div>` : '';
   const avisos = [];
   if (p.farmacia && p.farmacia_ant && p.farmacia !== p.farmacia_ant)
     avisos.push(`A planilha de hoje é de outro cliente (${esc(p.farmacia)}). Os preços podem não ser comparáveis com ${dBR(p.data_ant)}.`);
@@ -598,11 +632,13 @@ function vHoje() {
     <div class="filtros">
       <select class="sel-f" id="fLab"><option value="">Todos os laboratórios</option>${(p.labs || []).map(l => `<option ${S.lab === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
       <select class="sel-f" id="fCat"><option value="">Todas as categorias</option>${(p.cats || []).map(l => `<option ${S.cat === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+      <select class="sel-f" id="fOrd" title="Ordenar">${ORDENS.map(([k, t]) => `<option value="${k}" ${S.ordem === k ? 'selected' : ''}>${t}</option>`).join('')}</select>
       <label class="tgl"><input type="checkbox" id="fEst" ${S.estoque ? 'checked' : ''}> Só com estoque</label>
     </div>
     <div class="card lista" id="itens"></div>`;
   $('#fLab').onchange = e => { S.lab = e.target.value; S.limite = 300; carregarItens(); };
   $('#fCat').onchange = e => { S.cat = e.target.value; S.limite = 300; carregarItens(); };
+  $('#fOrd').onchange = e => { S.ordem = e.target.value; ls.set('ordem', S.ordem); S.limite = 300; carregarItens(); };
   $('#fEst').onchange = e => { S.estoque = e.target.checked; S.limite = 300; carregarItens(); };
   carregarItens();
 }
@@ -635,7 +671,7 @@ async function buscar(v) {
   S.busca = v.trim();
   if (S.busca.length < 2) { S.resBusca = null; return desenharBusca(); }
   const alvo = S.busca;
-  const r = await tentar(() => S.api.rpc('listar', { p_tipo: 'busca', p_lab: null, p_cat: null, p_estoque: false, p_busca: alvo, p_limite: 60 }));
+  const r = await tentar(() => S.api.rpc('listar', { p_tipo: 'busca', p_lab: null, p_cat: null, p_estoque: false, p_busca: alvo, p_limite: 60, p_ordem: 'nome' }));
   if (alvo !== S.busca) return;
   S.resBusca = r || []; desenharBusca();
 }
@@ -649,7 +685,7 @@ function desenharBusca() {
 /* ---------- Tela: Vigiados ---------- */
 async function vVigiados() {
   $('#main').innerHTML = `<div class="h1">Vigiados</div><div class="card lista" id="resV"><div class="carregando">Carregando…</div></div>`;
-  const r = await tentar(() => S.api.rpc('listar', { p_tipo: 'vigiados', p_lab: null, p_cat: null, p_estoque: false, p_busca: null, p_limite: 1000 }));
+  const r = await tentar(() => S.api.rpc('listar', { p_tipo: 'vigiados', p_lab: null, p_cat: null, p_estoque: false, p_busca: null, p_limite: 1000, p_ordem: 'eco' }));
   S.vigiados = r || []; guardar(S.vigiados);
   S.vigSet = new Set(S.vigiados.map(i => i.ean));
   const caiu = S.vigiados.filter(i => i.menor30 || i.queda).sort((a, b) => (b.eco || 0) - (a.eco || 0));
@@ -692,8 +728,8 @@ function gerarTexto() {
   const linhas = [`*${S.intro.trim()}*`, d ? `_Preços de ${d}_` : '', ''];
   S.lista.forEach(i => {
     linhas.push(`▪️ *${i.desc}*`);
-    const era = i.ref ? ` ~${brl(i.ref)}~ (${pct(i.eco)})` : '';
-    linhas.push(`${brl(i.nf)}${era}`);
+    const c = comparar(i);
+    linhas.push(c && c.dif > 0 ? `*${brl(i.nf)}* (antes ${brl(c.antes)} · economia de ${brl(c.dif)} / ${pctAbs(c.pct)})` : `*${brl(i.nf)}*`);
     const extra = [i.lab, i.ofim ? `oferta até ${dBR(i.ofim)}` : ''].filter(Boolean).join(' · ');
     if (extra) linhas.push(`_${extra}_`);
     linhas.push('');
@@ -709,7 +745,7 @@ async function vLista() {
       <div class="sec-t">Itens escolhidos <small>${n} ${n === 1 ? 'item' : 'itens'}</small>${n ? '<button class="lnk red" data-act="limpar">Limpar</button>' : ''}</div>
       <div id="itensL">${n ? S.lista.map(i => `<div class="prod" style="grid-template-columns:1fr auto 34px">
         <div><div class="nome">${esc(i.desc)}</div><div class="meta">${esc(i.lab || '')} · Cód. ${esc(i.cod || '—')}</div></div>
-        <div class="preco"><div class="nf">${brl(i.nf)}</div>${i.ref ? `<div class="era">era<s>${brl(i.ref)}</s></div>` : ''}</div>
+        <div class="preco">${precoHTML(i)}</div>
         <button class="rm" data-act="rm" data-ean="${esc(i.ean)}" title="Remover">${IC.x}</button></div>`).join('')
         : `<div class="vazio"><b>Lista vazia</b>Marque ${IC.check.replace('<svg', '<svg width="14" height="14" style="vertical-align:-2px"')} nos produtos das ofertas, da busca ou dos vigiados.</div>`}</div>
     </div>
@@ -753,7 +789,7 @@ async function salvarNoHistorico(texto) {
   ultimoSalvo = texto;
   await tentar(async () => {
     await S.api.inserir('listas', [{ data_ref: S.painel?.data || null, qtd: S.lista.length, texto,
-      itens: S.lista.map(i => ({ ean: i.ean, cod: i.cod, desc: i.desc, lab: i.lab, nf: i.nf, ref: i.ref, eco: i.eco, ofim: i.ofim })) }]);
+      itens: S.lista.map(i => ({ ean: i.ean, cod: i.cod, desc: i.desc, lab: i.lab, nf: i.nf, ant: i.ant, dc: i.dc, dc_ant: i.dc_ant, ref: i.ref, eco: i.eco, ofim: i.ofim })) }]);
     carregarHistorico();
   });
 }

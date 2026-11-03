@@ -119,6 +119,7 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
 .star{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;color:#c2cbd3}
 .star:hover{background:var(--bg)}
 .star.on{color:#f0a400}
+.todos{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 16px;background:var(--navy-soft);font-size:14px;flex-wrap:wrap}
 .mais{display:block;width:100%;padding:13px;color:var(--blue);font-weight:600;border-top:1px solid var(--line)}
 .vazio{padding:38px 20px;text-align:center;color:var(--muted)}
 .vazio b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
@@ -390,7 +391,6 @@ const S = {
   busca: '', resBusca: null,
   vigiados: null,
   lista: ls.get('lista', []),            // itens escolhidos para o WhatsApp
-  intro: ls.get('intro', 'Bom dia, time! Oportunidades de hoje na Santa Cruz:'),
   texto: null, textoEditado: false,
   historico: null,
   fila: [],                              // planilhas aguardando importação
@@ -653,7 +653,12 @@ function desenharItens() {
     el.innerHTML = `<div class="vazio"><b>${sem ? 'Ainda sem comparação' : 'Nada por aqui'}</b>${sem ? 'Importe a planilha de outro dia para o app encontrar as ofertas.' : 'Nenhum produto nesta categoria com os filtros escolhidos.'}</div>`;
     return;
   }
-  el.innerHTML = arr.map(i => linha(i)).join('') +
+  const todos = S.lab ? (() => {
+    const tudo = arr.every(i => naLista(i.ean));
+    return `<div class="todos"><span><b>${arr.length}</b> ${arr.length === 1 ? 'item' : 'itens'} de ${esc(S.lab)}</span>
+      <button class="lnk" data-act="todos">${tudo ? 'Desmarcar todos' : 'Marcar todos desta indústria'}</button></div>`;
+  })() : '';
+  el.innerHTML = todos + arr.map(i => linha(i)).join('') +
     (arr.length >= S.limite ? `<button class="mais" data-act="mais">Ver mais</button>` : '');
 }
 
@@ -722,19 +727,55 @@ function alternarLista(ean, forcarAdd) {
   navs();
 }
 
+function marcarTodos() {
+  const arr = S.itens || [];
+  const tudo = arr.every(i => naLista(i.ean));
+  if (tudo) S.lista = S.lista.filter(x => !arr.some(i => i.ean === x.ean));
+  else arr.forEach(i => { if (!naLista(i.ean)) S.lista.push({ ...i, data: S.painel?.data }); });
+  ls.set('lista', S.lista); S.textoEditado = false; S.texto = null;
+  desenharItens(); navs();
+  toast(tudo ? 'Itens desmarcados' : `${arr.length} ${arr.length === 1 ? 'item marcado' : 'itens marcados'}`);
+}
+
 /* ---------- Tela: Lista WhatsApp ---------- */
-function gerarTexto() {
-  const d = S.painel?.data ? dBR(S.painel.data, true) : '';
-  const linhas = [`*${S.intro.trim()}*`, d ? `_Preços de ${d}_` : '', ''];
-  S.lista.forEach(i => {
-    linhas.push(`▪️ *${i.desc}*`);
-    const c = comparar(i);
-    linhas.push(c && c.dif > 0 ? `*${brl(i.nf)}* (antes ${brl(c.antes)} · economia de ${brl(c.dif)} / ${pctAbs(c.pct)})` : `*${brl(i.nf)}*`);
-    const extra = [i.lab, i.ofim ? `oferta até ${dBR(i.ofim)}` : ''].filter(Boolean).join(' · ');
-    if (extra) linhas.push(`_${extra}_`);
-    linhas.push('');
+/* Mensagem do WhatsApp: título fixo, agrupada por indústria e por faixa de desconto */
+const TITULO_MSG = '*Oportunidades de hoje na Santa Cruz*';
+const RODAPE_MSG = '📲 Garanta o seu pedido, estoque limitado!';
+const MIN_DIAS_SELO = 10;   // planilhas na janela de 30 dias (contando hoje) para mostrar o selo ⭐
+const descInt = i => Math.max(0, Math.floor((Number(i.dc) || 0) + 1e-9));
+const temSelo = i => !!i.menor30 && (Number(i.dias30) || 0) + 1 >= MIN_DIAS_SELO;
+function gerarTexto(itens = S.lista) {
+  const porLab = new Map();
+  itens.forEach(i => {
+    const lab = (i.lab || 'OUTROS').trim().toUpperCase();
+    if (!porLab.has(lab)) porLab.set(lab, []);
+    porLab.get(lab).push(i);
   });
-  return linhas.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  const labs = [...porLab.entries()].map(([lab, arr]) => ({ lab, arr, max: Math.max(...arr.map(i => Number(i.dc) || 0)) }))
+    .sort((a, b) => b.max - a.max || a.lab.localeCompare(b.lab, 'pt-BR'));
+  const L = [TITULO_MSG, ''];
+  labs.forEach(({ lab, arr }) => {
+    L.push(`🏭 *${lab}*`, '');
+    const grupos = new Map();
+    arr.forEach(i => { const k = descInt(i); if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(i); });
+    [...grupos.entries()].sort((a, b) => b[0] - a[0]).forEach(([pct, g]) => {
+      g.sort((a, b) => String(a.desc).localeCompare(String(b.desc), 'pt-BR'));
+      const datas = new Set(g.map(i => i.ofim || ''));
+      const mesma = datas.size === 1 && g[0].ofim ? g[0].ofim : null;
+      const titulo = pct > 0 ? `*${pct}% OFF*` : '*Preço do dia*';
+      L.push(`${pct >= 10 ? '🔥' : '✅'} ${titulo}${mesma ? ` · até ${dBR(mesma)}` : ''}`);
+      g.forEach(i => {
+        L.push(`▪️ ${i.desc}`);
+        const partes = [`*${brl(i.nf)}*`, `Cód ${i.cod || '—'}`, `EAN ${i.ean}`];
+        if (!mesma && i.ofim) partes.push(`até ${dBR(i.ofim)}`);
+        L.push(partes.join(' · '));
+        if (temSelo(i)) L.push('⭐ Menor preço dos últimos 30 dias');
+      });
+      L.push('');
+    });
+  });
+  L.push(RODAPE_MSG);
+  return L.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
 async function vLista() {
@@ -751,8 +792,7 @@ async function vLista() {
     </div>
     <div class="card">
       <div class="sec-t">Mensagem${S.textoEditado ? '<button class="lnk" data-act="regerar">Refazer texto</button>' : '<small>pode editar à vontade</small>'}</div>
-      <div class="campo"><label>Frase de abertura</label><input id="intro" value="${esc(S.intro)}"></div>
-      <div class="campo" style="padding-top:0"><label>Texto para o WhatsApp</label><textarea id="txt">${esc(S.texto)}</textarea></div>
+      <div class="campo"><label>Texto para o WhatsApp</label><textarea id="txt">${esc(S.texto)}</textarea></div>
       <div class="acoes">
         <button class="btn btn-g" data-act="copiar" ${n ? '' : 'disabled'}>${IC.copy} Copiar</button>
         <button class="btn btn-w" data-act="whats" ${n ? '' : 'disabled'}>${IC.lista} Enviar no WhatsApp</button>
@@ -761,7 +801,6 @@ async function vLista() {
   </div>
   <div class="sp"></div>
   <div class="card"><div class="sec-t">Listas enviadas</div><div id="hist"><div class="carregando">Carregando…</div></div></div>`;
-  $('#intro').oninput = e => { S.intro = e.target.value; ls.set('intro', S.intro); if (!S.textoEditado) { S.texto = gerarTexto(); $('#txt').value = S.texto; } };
   $('#txt').oninput = e => { S.texto = e.target.value; if (!S.textoEditado) { S.textoEditado = true; $('.sec-t .lnk:not(.red)') || vListaCabecalho(); } };
   carregarHistorico();
 }
@@ -789,7 +828,7 @@ async function salvarNoHistorico(texto) {
   ultimoSalvo = texto;
   await tentar(async () => {
     await S.api.inserir('listas', [{ data_ref: S.painel?.data || null, qtd: S.lista.length, texto,
-      itens: S.lista.map(i => ({ ean: i.ean, cod: i.cod, desc: i.desc, lab: i.lab, nf: i.nf, ant: i.ant, dc: i.dc, dc_ant: i.dc_ant, ref: i.ref, eco: i.eco, ofim: i.ofim })) }]);
+      itens: S.lista.map(i => ({ ean: i.ean, cod: i.cod, desc: i.desc, lab: i.lab, nf: i.nf, ant: i.ant, dc: i.dc, dc_ant: i.dc_ant, ref: i.ref, eco: i.eco, ofim: i.ofim, menor30: i.menor30, dias30: i.dias30 })) }]);
     carregarHistorico();
   });
 }
@@ -923,6 +962,7 @@ async function onClick(e) {
     case 'add': return alternarLista(ean, true);
     case 'vig': return alternarVigia(ean);
     case 'mais': S.limite += 300; return carregarItens();
+    case 'todos': return marcarTodos();
     case 'rm': S.lista = S.lista.filter(x => x.ean !== ean); ls.set('lista', S.lista); S.textoEditado = false; navs(); return vLista();
     case 'limpar': if (confirm('Tirar todos os itens da lista?')) { S.lista = []; ls.set('lista', []); S.textoEditado = false; navs(); vLista(); } return;
     case 'regerar': S.textoEditado = false; S.texto = null; return vLista();

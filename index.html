@@ -1028,10 +1028,12 @@ const RODAPE_MSG = '📲 Garanta o seu pedido, estoque limitado!';
 const MIN_DIAS_SELO = 10;   // planilhas na janela de 30 dias (contando hoje) para mostrar o selo ⭐
 const descInt = i => Math.max(0, Math.floor((Number(i.dc) || 0) + 1e-9));
 const temSelo = i => !!i.menor30 && (Number(i.dias30) || 0) + 1 >= MIN_DIAS_SELO;
+const SEP_MSG = '──────────────';
+const limpaWa = t => String(t ?? '').replace(/[*_~`]/g, '').replace(/\s+/g, ' ').trim();   // não quebra o negrito do WhatsApp
 function gerarTexto(itens = S.lista) {
   const porLab = new Map();
   itens.forEach(i => {
-    const lab = (i.lab || 'OUTROS').trim().toUpperCase();
+    const lab = limpaWa(i.lab || 'OUTROS').toUpperCase();
     if (!porLab.has(lab)) porLab.set(lab, []);
     porLab.get(lab).push(i);
   });
@@ -1039,7 +1041,7 @@ function gerarTexto(itens = S.lista) {
     .sort((a, b) => b.max - a.max || a.lab.localeCompare(b.lab, 'pt-BR'));
   const L = [TITULO_MSG, ''];
   labs.forEach(({ lab, arr }) => {
-    L.push(`🏭 *${lab}*`, '');
+    L.push(SEP_MSG, `🏭 *${lab}*`, '');
     const grupos = new Map();
     arr.forEach(i => { const k = descInt(i); if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(i); });
     [...grupos.entries()].sort((a, b) => b[0] - a[0]).forEach(([pct, g]) => {
@@ -1047,15 +1049,16 @@ function gerarTexto(itens = S.lista) {
       const datas = new Set(g.map(i => i.ofim || ''));
       const mesma = datas.size === 1 && g[0].ofim ? g[0].ofim : null;
       const titulo = pct > 0 ? `*${pct}% OFF*` : '*Preço do dia*';
-      L.push(`${pct >= 10 ? '🔥' : '✅'} ${titulo}${mesma ? ` · até ${dBR(mesma)}` : ''}`);
+      L.push(`${pct >= 10 ? '🔥' : '✅'} ${titulo}${mesma ? ` · até ${dBR(mesma)}` : ''}`, '');
       g.forEach(i => {
-        L.push(`▪️ ${i.desc}`);
-        const partes = [`*${brl(i.nf)}*`, `Cód ${i.cod || '—'}`, `EAN ${i.ean}`];
-        if (!mesma && i.ofim) partes.push(`até ${dBR(i.ofim)}`);
-        L.push(partes.join(' · '));
+        L.push(`🔹 *${limpaWa(i.desc)}*`);
+        const pf = Number(i.pf) || 0, nf = Number(i.nf) || 0;
+        const preco = pct > 0 && pf > nf + 0.005 ? `De ~${brl(pf)}~ por *${brl(nf)}* (-${pct}%)` : `*${brl(nf)}*`;
+        L.push(`💰 ${preco}${!mesma && i.ofim ? ` · até ${dBR(i.ofim)}` : ''}`);
+        L.push('`' + `Cód ${i.cod || '—'} · EAN ${i.ean}` + '`');
         if (temSelo(i)) L.push('⭐ Menor preço dos últimos 30 dias');
+        L.push('');
       });
-      L.push('');
     });
   });
   L.push(RODAPE_MSG);
@@ -1112,7 +1115,7 @@ async function salvarNoHistorico(texto) {
   ultimoSalvo = texto;
   await tentar(async () => {
     await S.api.inserir('listas', [{ data_ref: S.painel?.data || null, qtd: S.lista.length, texto,
-      itens: S.lista.map(i => ({ ean: i.ean, cod: i.cod, desc: i.desc, lab: i.lab, nf: i.nf, ant: i.ant, dc: i.dc, dc_ant: i.dc_ant, ref: i.ref, eco: i.eco, ofim: i.ofim, menor30: i.menor30, dias30: i.dias30 })) }]);
+      itens: S.lista.map(i => ({ ean: i.ean, cod: i.cod, desc: i.desc, lab: i.lab, nf: i.nf, pf: i.pf, ant: i.ant, dc: i.dc, dc_ant: i.dc_ant, ref: i.ref, eco: i.eco, ofim: i.ofim, menor30: i.menor30, dias30: i.dias30 })) }]);
     carregarHistorico();
   });
 }

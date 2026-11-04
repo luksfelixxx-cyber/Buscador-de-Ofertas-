@@ -79,10 +79,37 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
 .seg button{flex:none;padding:8px 14px;border-radius:22px;background:#fff;border:1px solid var(--line);font-weight:600;font-size:14px;color:var(--muted)}
 .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .seg button span{opacity:.7;font-weight:500;margin-left:4px}
-.filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.sel-f{height:40px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 10px;min-width:0;flex:1 1 180px;max-width:290px}
-.tgl{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
-.tgl input{width:18px;height:18px;accent-color:var(--navy)}
+.filtros,.fbar{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px;margin-bottom:14px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fbar{display:flex;flex-direction:column;gap:10px}
+.frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sel-f{appearance:none;-webkit-appearance:none;height:38px;border:1px solid var(--line);border-radius:10px;background:#f6f8fa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2366727e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center;padding:0 32px 0 12px;min-width:0;flex:1 1 170px;max-width:280px;font-size:14px;font-weight:500;cursor:pointer;transition:border-color .15s,background-color .15s}
+.sel-f:hover{border-color:#c3ced8}
+.sel-f:focus{outline:2px solid var(--navy);outline-offset:-1px}
+.sel-f.ativo{background-color:var(--navy-soft);border-color:var(--navy);color:var(--navy);font-weight:600}
+.tgl{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap;margin-left:auto;padding:0 4px}
+.tgl input{appearance:none;-webkit-appearance:none;width:38px;height:22px;border-radius:11px;background:#cfd8e0;position:relative;cursor:pointer;transition:background .15s;flex:none}
+.tgl input::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.tgl input:checked{background:var(--navy)}
+.tgl input:checked::after{transform:translateX(16px)}
+.fsearch{position:relative;flex:1 1 260px}
+.fsearch svg{position:absolute;left:12px;top:11px;width:17px;height:17px;color:var(--muted)}
+.fsearch input{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:#f6f8fa;padding:0 34px 0 38px;font-size:14px}
+.fsearch input:focus{outline:2px solid var(--navy);outline-offset:-1px;background:#fff}
+.fsearch .lp{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:var(--muted)}
+.fsearch .lp:hover{background:var(--line)}
+.chips{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;padding:1px}
+.chips::-webkit-scrollbar{display:none}
+.flabel{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-right:4px;white-space:nowrap}
+.chip{flex:none;height:32px;padding:0 13px;border-radius:16px;border:1px solid var(--line);background:#f6f8fa;font-size:13.5px;font-weight:600;color:#4a5662;white-space:nowrap;transition:.15s}
+.chip:hover{border-color:#c3ced8}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip.c-queda.on{background:var(--red);border-color:var(--red)}
+.chip.c-voltou.on{background:var(--green);border-color:var(--green)}
+.chip.c-menor.on{background:var(--blue);border-color:var(--blue)}
+.fsep{width:1px;height:22px;background:var(--line);margin:0 4px;flex:none}
+.fres{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);margin:-4px 2px 10px}
+.fres b{color:var(--ink)}
 
 /* ---------- Lista de produtos ---------- */
 .lista{overflow:hidden}
@@ -227,6 +254,14 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
   .meta .ean{display:none}
   .preco .nf{font-size:16px}
   .sel-f{max-width:none;flex:1 1 140px}
+  .tgl{margin-left:0}
+  .filtros,.fbar{padding:10px;border-radius:12px}
+  .fsearch{flex-basis:100%}
+  .fsep{display:none}
+  .frow.wrapc{flex-direction:column;align-items:stretch;gap:8px}
+  .frow.wrapc .chips{width:100%;overflow-x:auto}
+  .flabel{min-width:72px}
+  .forn{padding:12px 14px}
   .resumo{padding:16px}
   .so-pc{display:none!important}
 }
@@ -652,14 +687,14 @@ function vHoje() {
   $('#main').innerHTML = `${resumoHTML(p)}
     <div class="seg" id="seg">${TIPOS.map(([k, t]) => `<button class="${S.tipo === k ? 'on' : ''}" data-tipo="${k}">${t}<span>${c[k] ?? 0}</span></button>`).join('')}</div>
     <div class="filtros">
-      <select class="sel-f" id="fLab"><option value="">Todos os laboratórios</option>${(p.labs || []).map(l => `<option ${S.lab === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
-      <select class="sel-f" id="fCat"><option value="">Todas as categorias</option>${(p.cats || []).map(l => `<option ${S.cat === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+      <select class="sel-f ${S.lab ? 'ativo' : ''}" id="fLab"><option value="">Todos os laboratórios</option>${(p.labs || []).map(l => `<option ${S.lab === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+      <select class="sel-f ${S.cat ? 'ativo' : ''}" id="fCat"><option value="">Todas as categorias</option>${(p.cats || []).map(l => `<option ${S.cat === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
       <select class="sel-f" id="fOrd" title="Ordenar">${ORDENS.map(([k, t]) => `<option value="${k}" ${S.ordem === k ? 'selected' : ''}>${t}</option>`).join('')}</select>
       <label class="tgl"><input type="checkbox" id="fEst" ${S.estoque ? 'checked' : ''}> Só com estoque</label>
     </div>
     <div class="card lista" id="itens"></div>`;
-  $('#fLab').onchange = e => { S.lab = e.target.value; S.limite = 300; carregarItens(); };
-  $('#fCat').onchange = e => { S.cat = e.target.value; S.limite = 300; carregarItens(); };
+  $('#fLab').onchange = e => { S.lab = e.target.value; e.target.classList.toggle('ativo', !!S.lab); S.limite = 300; carregarItens(); };
+  $('#fCat').onchange = e => { S.cat = e.target.value; e.target.classList.toggle('ativo', !!S.cat); S.limite = 300; carregarItens(); };
   $('#fOrd').onchange = e => { S.ordem = e.target.value; ls.set('ordem', S.ordem); S.limite = 300; carregarItens(); };
   $('#fEst').onchange = e => { S.estoque = e.target.checked; S.limite = 300; carregarItens(); };
   carregarItens();
@@ -715,7 +750,71 @@ function fornecedores(itens) {
     .sort((a, b) => b.com.length - a.com.length || b.max - a.max || a.nome.localeCompare(b.nome));
 }
 
+/* Filtros da aba Provendas (valem na visão por fornecedor e dentro de cada um) */
+const PF0 = { q: '', cat: '', min: 0, sit: '', ord: 'desc' };
+const ORD_PROV = [['desc', 'Maior desconto'], ['eco', 'Maior economia'], ['menor', 'Menor preço'], ['maior', 'Maior preço'], ['nome', 'Nome (A-Z)']];
+const SIT_PROV = [['', 'Todos'], ['queda', 'Caíram', 'c-queda'], ['voltou', 'Voltou ao estoque', 'c-voltou'], ['menor', 'Menor 30 dias', 'c-menor']];
+const MIN_PROV = [[0, 'Qualquer'], [5, '5%+'], [10, '10%+'], [20, '20%+']];
+const pfAtivo = () => { const f = S.pf || PF0; return !!(f.q || f.cat || f.min || f.sit); };
+const semAcento = t => String(t ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+
+function filtrarProv(itens) {
+  const f = S.pf || PF0;
+  const ws = semAcento(f.q).split(/\s+/).filter(Boolean);
+  return itens.filter(i => {
+    if (f.cat && i.cat !== f.cat) return false;
+    if (f.min && !(Number(i.dc) >= f.min)) return false;
+    if (f.sit === 'queda' && !i.queda) return false;
+    if (f.sit === 'voltou' && !i.voltou) return false;
+    if (f.sit === 'menor' && !i.menor30) return false;
+    if (ws.length) {
+      const alvo = semAcento([i.desc, i.apres, i.cod, i.ean, i.forn, i.lab].join(' '));
+      if (!ws.every(w => alvo.includes(w))) return false;
+    }
+    return true;
+  });
+}
+function ordenarProv(arr) {
+  const o = (S.pf || PF0).ord, n = x => Number(x) || 0;
+  const eco = i => { const c = comparar(i); return c ? c.pct : -Infinity; };
+  const fn = { desc: (a, b) => n(b.dc) - n(a.dc), eco: (a, b) => eco(b) - eco(a), menor: (a, b) => n(a.nf) - n(b.nf),
+    maior: (a, b) => n(b.nf) - n(a.nf), nome: () => 0 }[o] || (() => 0);
+  return arr.sort((a, b) => fn(a, b) || String(a.desc).localeCompare(String(b.desc), 'pt-BR'));
+}
+
+function fornecedores(itens) {
+  const m = new Map();
+  itens.forEach(i => {
+    const k = i.forn || 'Sem fornecedor';
+    if (!m.has(k)) m.set(k, { nome: k, total: 0, com: [], aguard: [], caiu: 0, voltou: 0, max: 0 });
+    const f = m.get(k); f.total++;
+    if (Number(i.dc) > 0) {
+      if (i.est > 0) { f.com.push(i); f.max = Math.max(f.max, Number(i.dc)); if (i.queda) f.caiu++; if (i.voltou) f.voltou++; }
+      else f.aguard.push(i);
+    }
+  });
+  return [...m.values()].map(f => (ordenarProv(f.com), ordenarProv(f.aguard), f))
+    .sort((a, b) => b.com.length - a.com.length || b.max - a.max || a.nome.localeCompare(b.nome));
+}
+
+function fbarProv(detalhe) {
+  const f = S.pf, cats = [...new Set(S.camp.itens.map(i => i.cat).filter(Boolean))].sort();
+  return `<div class="fbar" id="pfBar">
+    <div class="frow">
+      <div class="fsearch">${IC.busca}<input id="pfQ" type="search" placeholder="${detalhe ? 'Buscar neste fornecedor' : 'Buscar produto, código ou EAN na campanha'}" value="${esc(f.q)}" autocomplete="off">
+        ${f.q ? `<button class="lp" data-act="pfLimparQ" title="Limpar">${IC.x}</button>` : ''}</div>
+      <select class="sel-f ${f.cat ? 'ativo' : ''}" id="pfCat"><option value="">Todas as categorias</option>${cats.map(c => `<option ${f.cat === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      <select class="sel-f" id="pfOrd">${ORD_PROV.map(([k, t]) => `<option value="${k}" ${f.ord === k ? 'selected' : ''}>Ordenar: ${t.toLowerCase()}</option>`).join('')}</select>
+    </div>
+    <div class="frow wrapc">
+      <div class="chips"><span class="flabel">Desconto</span>${MIN_PROV.map(([v, t]) => `<button class="chip ${f.min === v ? 'on' : ''}" data-act="pfMin" data-v="${v}">${t}</button>`).join('')}</div>
+      <span class="fsep"></span>
+      <div class="chips"><span class="flabel">Situação</span>${SIT_PROV.map(([v, t, c]) => `<button class="chip ${c || ''} ${f.sit === v ? 'on' : ''}" data-act="pfSit" data-v="${v}">${t}</button>`).join('')}</div>
+    </div></div>`;
+}
+
 async function vProvendas() {
+  if (!S.pf) S.pf = { ...PF0 };
   if (!S.camp) {
     $('#main').innerHTML = '<div class="carregando">Carregando…</div>';
     const r = await tentar(() => S.api.rpc('campanha_atual'));
@@ -725,43 +824,76 @@ async function vProvendas() {
   }
   const c = S.camp;
   if (!c.mes) return $('#main').innerHTML = `<div class="card vazio"><b>Nenhuma lista Provendas</b>Suba a planilha da campanha do mês em Importar (EAN na coluna A, código Santa Cruz na D).<div class="sp"></div><button class="btn btn-p" style="flex:none" data-go="importar">${IC.up} Importar lista</button></div>`;
-  const fs = fornecedores(c.itens);
   const aviso = campVencida() ? `<div class="aviso" style="margin:0 0 14px">Esta lista é de ${mesNome(c.mes)}. Suba a lista de ${mesNome(mesAtual())} em Importar.</div>` : '';
+  const todos = fornecedores(c.itens);
+  let topo;
   if (S.provForn) {
-    const f = fs.find(x => x.nome === S.provForn);
+    const f = todos.find(x => x.nome === S.provForn);
     if (!f) { S.provForn = null; return vProvendas(); }
+    topo = `<button class="voltar" data-act="provVoltar">← Todos os fornecedores</button>
+      <div class="prov-top"><div class="h1">${esc(nomeForn(f.nome))}</div>
+      <p><b>${f.com.length}</b> com desconto · ${f.aguard.length} aguardando estoque · ${f.total} na campanha</p></div>`;
+  } else {
+    const com = todos.reduce((n, f) => n + f.com.length, 0), dez = todos.reduce((n, f) => n + f.com.filter(i => i.dc >= 10).length, 0);
+    const ag = todos.reduce((n, f) => n + f.aguard.length, 0);
+    topo = `<div class="prov-top"><div class="h1">Provendas · ${mesNome(c.mes)}</div>
+      <p><b>${com}</b> com desconto · <b>${dez}</b> com 10% ou mais · <b>${ag}</b> aguardando estoque</p></div>`;
+  }
+  $('#main').innerHTML = `${aviso}${topo}${fbarProv(!!S.provForn)}<div id="provRes"></div>`;
+  let t;
+  $('#pfQ').oninput = e => { clearTimeout(t); t = setTimeout(() => { S.pf.q = e.target.value; desenharProv(); }, 200); };
+  $('#pfCat').onchange = e => { S.pf.cat = e.target.value; e.target.classList.toggle('ativo', !!S.pf.cat); desenharProv(); };
+  $('#pfOrd').onchange = e => { S.pf.ord = e.target.value; desenharProv(); };
+  desenharProv();
+}
+
+function resFiltro(n, rot) {
+  return `<div class="fres"><span><b>${n}</b> ${rot}</span>${pfAtivo() ? '<button class="lnk" data-act="pfLimpar">Limpar filtros</button>' : ''}</div>`;
+}
+
+function desenharProv() {
+  const el = $('#provRes'); if (!el) return;
+  const filt = filtrarProv(S.camp.itens);
+  const fs = fornecedores(filt);
+  if (S.provForn) {
+    const f = fs.find(x => x.nome === S.provForn) || { com: [], aguard: [] };
     guardar(f.com); guardar(f.aguard);
     const tudo = f.com.length && f.com.every(i => naLista(i.ean));
-    $('#main').innerHTML = `${aviso}<button class="voltar" data-act="provVoltar">← Todos os fornecedores</button>
-      <div class="prov-top"><div class="h1">${esc(nomeForn(f.nome))}</div>
-      <p><b>${f.com.length}</b> com desconto · ${f.aguard.length} aguardando estoque · ${f.total} na campanha</p></div>
-      <div class="card lista" id="provCom">${f.com.length ? `<div class="todos"><span><b>${f.com.length}</b> com desconto hoje</span><button class="lnk" data-act="provTodos">${tudo ? 'Desmarcar todos' : 'Marcar todos deste fornecedor'}</button></div>` + f.com.map(i => linha(i, 'prov')).join('')
-        : '<div class="vazio"><b>Nenhum item com desconto hoje</b>Os produtos deste fornecedor aparecem aqui quando entrarem em desconto.</div>'}</div>
+    el.innerHTML = resFiltro(f.com.length, f.com.length === 1 ? 'produto com desconto' : 'produtos com desconto') +
+      `<div class="card lista" id="provCom">${f.com.length ? `<div class="todos"><span><b>${f.com.length}</b> ${pfAtivo() ? 'no filtro' : 'com desconto hoje'}</span><button class="lnk" data-act="provTodos">${tudo ? 'Desmarcar todos' : pfAtivo() ? 'Marcar todos do filtro' : 'Marcar todos deste fornecedor'}</button></div>` + f.com.map(i => linha(i, 'prov')).join('')
+        : `<div class="vazio"><b>${pfAtivo() ? 'Nada com esses filtros' : 'Nenhum item com desconto hoje'}</b>${pfAtivo() ? 'Tente outro filtro ou limpe os filtros.' : 'Os produtos deste fornecedor aparecem aqui quando entrarem em desconto.'}</div>`}</div>
       ${f.aguard.length ? `<div class="sub-t">Aguardando estoque <span class="bdg" style="background:var(--muted)">${f.aguard.length}</span></div>
       <div class="card lista">${f.aguard.map(i => linha(i, 'prov')).join('')}</div>` : ''}`;
     return;
   }
-  const com = fs.reduce((n, f) => n + f.com.length, 0), dez = fs.reduce((n, f) => n + f.com.filter(i => i.dc >= 10).length, 0);
-  const ag = fs.reduce((n, f) => n + f.aguard.length, 0);
-  $('#main').innerHTML = `${aviso}<div class="prov-top"><div class="h1">Provendas · ${mesNome(c.mes)}</div>
-    <p><b>${com}</b> com desconto · <b>${dez}</b> com 10% ou mais · <b>${ag}</b> aguardando estoque</p></div>
-    <div class="forn-grid">${fs.map(f => {
+  if ((S.pf.q || '').trim()) {   // busca: lista direta de produtos, sem passar pelos fornecedores
+    const com = ordenarProv(fs.flatMap(f => f.com)), ag = ordenarProv(fs.flatMap(f => f.aguard));
+    guardar(com); guardar(ag);
+    el.innerHTML = resFiltro(com.length, com.length === 1 ? 'produto com desconto' : 'produtos com desconto') +
+      `<div class="card lista">${com.length ? com.map(i => linha(i, 'prov')).join('') : '<div class="vazio"><b>Nada encontrado</b>Tente outra palavra, o código ou o EAN.</div>'}</div>
+      ${ag.length ? `<div class="sub-t">Aguardando estoque <span class="bdg" style="background:var(--muted)">${ag.length}</span></div><div class="card lista">${ag.map(i => linha(i, 'prov')).join('')}</div>` : ''}`;
+    return;
+  }
+  const lst = pfAtivo() ? fs.filter(f => f.com.length || f.aguard.length) : fs;
+  const nCom = lst.reduce((n, f) => n + f.com.length, 0);
+  el.innerHTML = resFiltro(nCom, `com desconto em ${lst.length} ${lst.length === 1 ? 'fornecedor' : 'fornecedores'}`) +
+    (lst.length ? `<div class="forn-grid">${lst.map(f => {
       const chips = [f.caiu ? `<span class="tag t-queda">${f.caiu} ${f.caiu === 1 ? 'caiu' : 'caíram'}</span>` : '', f.voltou ? `<span class="tag t-voltou">${f.voltou} ${f.voltou === 1 ? 'voltou' : 'voltaram'} ao estoque</span>` : '',
         f.aguard.length ? `<span class="tag t-zero">${f.aguard.length} aguardando estoque</span>` : ''].filter(Boolean).join('');
       return `<button class="forn ${f.com.length ? '' : 'apagado'}" data-act="provForn" data-f="${esc(f.nome)}">
         <span class="fn">${esc(nomeForn(f.nome))}</span>
         <span class="fq">${f.com.length ? `<b>${f.com.length}</b> de ${f.total} com desconto · <span class="mx">até ${Math.floor(f.max)}%</span>` : `Sem desconto hoje · ${f.total} na campanha`}</span>
         ${chips ? `<span class="tags">${chips}</span>` : ''}</button>`;
-    }).join('')}</div>`;
+    }).join('')}</div>` : '<div class="card vazio"><b>Nada com esses filtros</b>Tente outro filtro ou limpe os filtros.</div>');
 }
 
 function provTodos() {
-  const f = fornecedores(S.camp.itens).find(x => x.nome === S.provForn); if (!f) return;
+  const f = fornecedores(filtrarProv(S.camp.itens)).find(x => x.nome === S.provForn); if (!f) return;
   const tudo = f.com.every(i => naLista(i.ean));
   if (tudo) S.lista = S.lista.filter(x => !f.com.some(i => i.ean === x.ean));
   else f.com.forEach(i => { if (!naLista(i.ean)) S.lista.push({ ...i, data: S.painel?.data }); });
   ls.set('lista', S.lista); S.textoEditado = false; S.texto = null;
-  navs(); vProvendas();
+  navs(); desenharProv();
   toast(tudo ? 'Itens desmarcados' : `${f.com.length} ${f.com.length === 1 ? 'item marcado' : 'itens marcados'}`);
 }
 
@@ -1129,6 +1261,10 @@ async function onClick(e) {
     case 'todos': return marcarTodos();
     case 'provForn': S.provForn = a.dataset.f; window.scrollTo(0, 0); return vProvendas();
     case 'provVoltar': S.provForn = null; return vProvendas();
+    case 'pfMin': S.pf.min = +a.dataset.v; a.parentNode.querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b === a)); return desenharProv();
+    case 'pfSit': S.pf.sit = a.dataset.v; a.parentNode.querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b === a)); return desenharProv();
+    case 'pfLimparQ': S.pf.q = ''; return vProvendas();
+    case 'pfLimpar': S.pf = { ...PF0, ord: S.pf.ord }; return vProvendas();
     case 'provTodos': return provTodos();
     case 'rm': S.lista = S.lista.filter(x => x.ean !== ean); ls.set('lista', S.lista); S.textoEditado = false; navs(); return vLista();
     case 'limpar': if (confirm('Tirar todos os itens da lista?')) { S.lista = []; ls.set('lista', []); S.textoEditado = false; navs(); vLista(); } return;

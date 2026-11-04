@@ -99,6 +99,23 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
 .t-novo{background:var(--amber-soft);color:var(--amber)}
 .t-of{background:var(--navy-soft);color:var(--navy)}
 .t-zero{background:#f0f0f0;color:#888}
+.t-prov{background:#efe7fb;color:#6a35b8}
+.forn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.forn{text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.forn:hover{border-color:var(--navy)}
+.forn .fn{font-weight:700;font-size:15px}
+.forn .fq{font-size:13.5px;color:var(--muted)}
+.forn .fq b{color:var(--ink);font-size:15px}
+.forn .fq .mx{color:var(--green);font-weight:700}
+.forn.apagado{opacity:.6;box-shadow:none}
+.prov-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+.prov-top .h1{margin:0}
+.prov-top p{color:var(--muted);font-size:14px}
+.prov-top p b{color:var(--ink)}
+.voltar{color:var(--blue);font-weight:600;font-size:14px;margin-bottom:8px;display:inline-block}
+.sub-t{font-weight:700;margin:18px 0 8px;display:flex;gap:8px;align-items:center}
+.relat{padding:14px 16px;font-size:14px;line-height:1.6}
+.relat ul{margin:6px 0 0 18px;color:var(--muted);font-size:13px}
 .preco{text-align:right;white-space:nowrap}
 .preco .nf{font-size:17px;font-weight:700;color:var(--navy)}
 .preco .era{font-size:12px;color:var(--muted)}
@@ -190,7 +207,7 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
   .tabs,.chip-data .lg{display:none}
   .top-in{padding:8px 12px;min-height:52px}
   main{padding:14px 12px calc(96px + var(--safe-b))}
-  .bottom{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;bottom:0;left:0;right:0;z-index:20;background:#fff;border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
+  .bottom{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:20;background:#fff;border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
   .bottom button{padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;font-weight:600;color:var(--muted);position:relative}
   .bottom button svg{width:23px;height:23px}
   .bottom button.on{color:var(--navy)}
@@ -380,6 +397,7 @@ const IC = {
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="18" height="18"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>',
+  prov: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>',
   logo: '<svg viewBox="0 0 20 20"><rect x="7" y="1.5" width="6" height="17" rx="1" fill="#d83038"/><rect x="1.5" y="7" width="17" height="6" rx="1" fill="#d83038"/></svg>'
 };
 
@@ -459,7 +477,7 @@ function telaLogin(erro) {
 }
 
 /* ---------- Estrutura ---------- */
-const ABAS = [['hoje', 'Ofertas', IC.hoje], ['busca', 'Busca', IC.busca], ['vigiados', 'Vigiados', IC.starO], ['lista', 'Lista', IC.lista]];
+const ABAS = [['hoje', 'Ofertas', IC.hoje], ['provendas', 'Provendas', IC.prov], ['busca', 'Busca', IC.busca], ['vigiados', 'Vigiados', IC.starO], ['lista', 'Lista', IC.lista]];
 
 function montar() {
   $('#app').innerHTML = `
@@ -484,6 +502,7 @@ function montar() {
   if ($('#sair')) $('#sair').onclick = async () => { await S.sb.auth.signOut(); location.reload(); };
   document.body.addEventListener('click', onClick);
   carregarPainel().then(() => { if (S.painel?.vazio) ir('importar'); });
+  carregarCampEans();
   ir(S.aba);
 }
 
@@ -506,7 +525,7 @@ function fab() {
 
 function ir(aba) {
   S.aba = aba; navs(); window.scrollTo(0, 0);
-  ({ hoje: vHoje, busca: vBusca, vigiados: vVigiados, lista: vLista, importar: vImportar })[aba]();
+  ({ hoje: vHoje, provendas: vProvendas, busca: vBusca, vigiados: vVigiados, lista: vLista, importar: vImportar })[aba]();
 }
 
 function toast(msg, ms = 2600) {
@@ -524,6 +543,7 @@ async function tentar(fn) {
 
 /* ---------- Dados ---------- */
 async function carregarPainel() {
+  S.camp = null;
   await tentar(async () => { S.painel = await S.api.rpc('painel'); });
   navs();
   if (S.aba === 'hoje') vHoje();
@@ -567,6 +587,7 @@ function linha(it, modo) {
   if (it.voltou) tags.push('<span class="tag t-voltou">Voltou ao estoque</span>');
   if (it.novo) tags.push('<span class="tag t-novo">Novo</span>');
   if (!(it.est > 0)) tags.push('<span class="tag t-zero">Sem estoque</span>');
+  if (modo !== 'prov' && S.campSet?.has(it.ean)) tags.push('<span class="tag t-prov">Provendas</span>');
   if (it.ofim) tags.push(`<span class="tag t-of">Oferta até ${dBR(it.ofim)}</span>`);
 
   let preco;
@@ -617,6 +638,7 @@ function resumoHTML(p) {
     avisos.push(`A planilha de hoje é de outro cliente (${esc(p.farmacia)}). Os preços podem não ser comparáveis com ${dBR(p.data_ant)}.`);
   else if (p.data_ant && p.dias_hist < 5)
     avisos.push(`Histórico com ${p.dias_hist} ${p.dias_hist === 1 ? 'dia' : 'dias'} até agora. A comparação de 30 dias fica mais precisa a cada planilha.`);
+  if (campVencida()) avisos.push(`A lista Provendas é de ${mesNome(S.campMes)}. Suba a lista de ${mesNome(mesAtual())} em Importar.`);
   return `<section class="resumo"><h2>Resumo de ${dBR(p.data, true)}</h2><p class="frase">${frase}</p>
     ${dest(vig, '⭐ Vigiados que caíram')}${dest(p.destaques || [], 'Destaques do dia')}
     ${avisos.map(a => `<div class="aviso">${a}</div>`).join('')}</section>`;
@@ -660,6 +682,136 @@ function desenharItens() {
   })() : '';
   el.innerHTML = todos + arr.map(i => linha(i)).join('') +
     (arr.length >= S.limite ? `<button class="mais" data-act="mais">Ver mais</button>` : '');
+}
+
+/* ---------- Campanha Provendas ---------- */
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const mesNome = iso => { if (!iso) return ''; const [y, m] = iso.split('-'); return `${MESES[+m - 1]} de ${y}`; };
+const mesAtual = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`; };
+const campVencida = () => !!S.campMes && S.campMes.slice(0, 7) < mesAtual().slice(0, 7);
+const nomeForn = f => String(f || 'Sem fornecedor').replace(/_/g, ' ');
+
+async function carregarCampEans() {
+  await tentar(async () => {
+    const r = await S.api.rpc('campanha_eans');
+    S.campMes = r?.mes || null; S.campSet = new Set(r?.eans || []);
+  });
+  if (S.aba === 'hoje') { desenharItens(); const rs = document.querySelector('.resumo'); if (rs && S.painel) rs.outerHTML = resumoHTML(S.painel); }
+}
+
+function fornecedores(itens) {
+  const m = new Map();
+  itens.forEach(i => {
+    const k = i.forn || 'Sem fornecedor';
+    if (!m.has(k)) m.set(k, { nome: k, total: 0, com: [], aguard: [], caiu: 0, voltou: 0, max: 0 });
+    const f = m.get(k); f.total++;
+    if (Number(i.dc) > 0) {
+      if (i.est > 0) { f.com.push(i); f.max = Math.max(f.max, Number(i.dc)); if (i.queda) f.caiu++; if (i.voltou) f.voltou++; }
+      else f.aguard.push(i);
+    }
+  });
+  const ord = (a, b) => (Number(b.dc) || 0) - (Number(a.dc) || 0) || String(a.desc).localeCompare(String(b.desc), 'pt-BR');
+  return [...m.values()].map(f => (f.com.sort(ord), f.aguard.sort(ord), f))
+    .sort((a, b) => b.com.length - a.com.length || b.max - a.max || a.nome.localeCompare(b.nome));
+}
+
+async function vProvendas() {
+  if (!S.camp) {
+    $('#main').innerHTML = '<div class="carregando">Carregando…</div>';
+    const r = await tentar(() => S.api.rpc('campanha_atual'));
+    if (S.aba !== 'provendas') return;
+    S.camp = r || { mes: null, itens: [] };
+    guardar(S.camp.itens);
+  }
+  const c = S.camp;
+  if (!c.mes) return $('#main').innerHTML = `<div class="card vazio"><b>Nenhuma lista Provendas</b>Suba a planilha da campanha do mês em Importar (EAN na coluna A, código Santa Cruz na D).<div class="sp"></div><button class="btn btn-p" style="flex:none" data-go="importar">${IC.up} Importar lista</button></div>`;
+  const fs = fornecedores(c.itens);
+  const aviso = campVencida() ? `<div class="aviso" style="margin:0 0 14px">Esta lista é de ${mesNome(c.mes)}. Suba a lista de ${mesNome(mesAtual())} em Importar.</div>` : '';
+  if (S.provForn) {
+    const f = fs.find(x => x.nome === S.provForn);
+    if (!f) { S.provForn = null; return vProvendas(); }
+    guardar(f.com); guardar(f.aguard);
+    const tudo = f.com.length && f.com.every(i => naLista(i.ean));
+    $('#main').innerHTML = `${aviso}<button class="voltar" data-act="provVoltar">← Todos os fornecedores</button>
+      <div class="prov-top"><div class="h1">${esc(nomeForn(f.nome))}</div>
+      <p><b>${f.com.length}</b> com desconto · ${f.aguard.length} aguardando estoque · ${f.total} na campanha</p></div>
+      <div class="card lista" id="provCom">${f.com.length ? `<div class="todos"><span><b>${f.com.length}</b> com desconto hoje</span><button class="lnk" data-act="provTodos">${tudo ? 'Desmarcar todos' : 'Marcar todos deste fornecedor'}</button></div>` + f.com.map(i => linha(i, 'prov')).join('')
+        : '<div class="vazio"><b>Nenhum item com desconto hoje</b>Os produtos deste fornecedor aparecem aqui quando entrarem em desconto.</div>'}</div>
+      ${f.aguard.length ? `<div class="sub-t">Aguardando estoque <span class="bdg" style="background:var(--muted)">${f.aguard.length}</span></div>
+      <div class="card lista">${f.aguard.map(i => linha(i, 'prov')).join('')}</div>` : ''}`;
+    return;
+  }
+  const com = fs.reduce((n, f) => n + f.com.length, 0), dez = fs.reduce((n, f) => n + f.com.filter(i => i.dc >= 10).length, 0);
+  const ag = fs.reduce((n, f) => n + f.aguard.length, 0);
+  $('#main').innerHTML = `${aviso}<div class="prov-top"><div class="h1">Provendas · ${mesNome(c.mes)}</div>
+    <p><b>${com}</b> com desconto · <b>${dez}</b> com 10% ou mais · <b>${ag}</b> aguardando estoque</p></div>
+    <div class="forn-grid">${fs.map(f => {
+      const chips = [f.caiu ? `<span class="tag t-queda">${f.caiu} ${f.caiu === 1 ? 'caiu' : 'caíram'}</span>` : '', f.voltou ? `<span class="tag t-voltou">${f.voltou} ${f.voltou === 1 ? 'voltou' : 'voltaram'} ao estoque</span>` : '',
+        f.aguard.length ? `<span class="tag t-zero">${f.aguard.length} aguardando estoque</span>` : ''].filter(Boolean).join('');
+      return `<button class="forn ${f.com.length ? '' : 'apagado'}" data-act="provForn" data-f="${esc(f.nome)}">
+        <span class="fn">${esc(nomeForn(f.nome))}</span>
+        <span class="fq">${f.com.length ? `<b>${f.com.length}</b> de ${f.total} com desconto · <span class="mx">até ${Math.floor(f.max)}%</span>` : `Sem desconto hoje · ${f.total} na campanha`}</span>
+        ${chips ? `<span class="tags">${chips}</span>` : ''}</button>`;
+    }).join('')}</div>`;
+}
+
+function provTodos() {
+  const f = fornecedores(S.camp.itens).find(x => x.nome === S.provForn); if (!f) return;
+  const tudo = f.com.every(i => naLista(i.ean));
+  if (tudo) S.lista = S.lista.filter(x => !f.com.some(i => i.ean === x.ean));
+  else f.com.forEach(i => { if (!naLista(i.ean)) S.lista.push({ ...i, data: S.painel?.data }); });
+  ls.set('lista', S.lista); S.textoEditado = false; S.texto = null;
+  navs(); vProvendas();
+  toast(tudo ? 'Itens desmarcados' : `${f.com.length} ${f.com.length === 1 ? 'item marcado' : 'itens marcados'}`);
+}
+
+/* Lista Provendas: reconhece a planilha pelo cabeçalho (EAN + COD PFAT + FORNECEDOR) */
+const MES_ABR = { JAN: 1, FEV: 2, MAR: 3, ABR: 4, MAI: 5, JUN: 6, JUL: 7, AGO: 8, SET: 9, OUT: 10, NOV: 11, DEZ: 12 };
+function lerCampanha(wb) {
+  const nrm = x => String(x ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const L = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, blankrows: false });
+  const hi = L.slice(0, 15).findIndex(r => (r || []).some(c => nrm(c) === 'codpfat') && (r || []).some(c => nrm(c) === 'fornecedor'));
+  if (hi < 0) return null;
+  const idx = {}; L[hi].forEach((c, i) => { const n = nrm(c); if (idx[n] === undefined) idx[n] = i; });
+  const col = (...ns) => { for (const n of ns) if (idx[n] !== undefined) return idx[n]; return undefined; };
+  const ci = { ean: col('codprodean', 'ean', 'codigoean'), cod: col('codpfat'), cod_prov: col('codigo'), fornecedor: col('fornecedor'),
+    linha: col('linha'), produto: col('produto'), apresentacao: col('apresentacao') };
+  const txt = v => v == null ? '' : String(v).trim();
+  const itens = L.slice(hi + 1).map(r => {
+    const o = {}; for (const k in ci) o[k] = ci[k] === undefined ? '' : txt(r[ci[k]]);
+    o.ean = o.ean.replace(/\D/g, '').replace(/^0+$/, ''); o.cod = o.cod.replace(/\D/g, '').replace(/^0+$/, '');  // 0 = "em cadastro"
+    return o;
+  }).filter(o => o.ean || o.cod);
+  // mês: coluna com abreviação (ex.: NOV); senão o mês atual
+  let mes = mesAtual();
+  const abr = L[hi + 1]?.map(c => String(c ?? '').trim().toUpperCase()).find(c => MES_ABR[c]);
+  if (abr) {
+    const hoje = new Date(); let y = hoje.getFullYear(); const m = MES_ABR[abr];
+    if (m < hoje.getMonth() + 1 - 6) y++; else if (m > hoje.getMonth() + 1 + 6) y--;
+    mes = `${y}-${String(m).padStart(2, '0')}-01`;
+  }
+  return { itens, mes };
+}
+
+async function importarCampanha(it) {
+  it.status = 'enviando'; it.prog = .3; desenharFila();
+  try {
+    const mes = it.data.slice(0, 7) + '-01';
+    it.rel = await S.api.rpc('importar_campanha', { p_mes: mes, p_itens: it.camp.itens });
+    it.status = 'ok';
+    S.camp = null; S.provForn = null; await carregarCampEans();
+  } catch (e) { it.status = 'erro'; it.erro = e.message; }
+  desenharFila();
+}
+
+function relatorioCampanha(r) {
+  if (!r) return '';
+  const lst = (arr, t) => arr.length ? `<div>${t}:<ul>${arr.slice(0, 30).map(x => `<li>${esc(x.apres || '')} · EAN ${esc(x.ean || '—')} · Cód ${esc(x.cod || '—')} · ${esc(nomeForn(x.forn))}</li>`).join('')}${arr.length > 30 ? `<li>… e mais ${arr.length - 30}</li>` : ''}</ul></div>` : '';
+  return `<div class="relat"><b>Lista Provendas de ${mesNome(r.mes)} importada:</b> ${r.total} produtos ·
+    ${r.por_ean} encontrados pelo EAN${r.por_cod ? ` · ${r.por_cod} pelo código Santa Cruz` : ''}${r.nao_encontrados.length ? ` · <span class="st-err">${r.nao_encontrados.length} não encontrados</span>` : ''}
+    ${lst(r.nao_encontrados, 'Não encontrados na planilha de preços (não aparecem na aba)')}
+    ${lst(r.divergentes, 'Código Santa Cruz diferente do EAN na lista (o app usou o EAN)')}</div>`;
 }
 
 /* ---------- Tela: Busca ---------- */
@@ -842,7 +994,7 @@ function vImportar() {
   $('#main').innerHTML = `<div class="h1">Importar planilhas</div>
     ${ehCel() ? '<div class="aviso" style="margin:0 0 12px">A importação foi pensada para o computador, mas funciona aqui também.</div>' : ''}
     <label class="drop" id="drop">${IC.up}<b>Arraste as planilhas aqui ou clique para escolher</b>
-      <span class="muted">Exportação da aba "Lista de Produtos" do pedido eletrônico (.xlsx). Pode escolher várias de dias diferentes.</span>
+      <span class="muted">Planilhas de preço do pedido eletrônico (aba "Lista de Produtos") e a lista mensal do Provendas (.xlsx). O app reconhece cada uma sozinho.</span>
       <input type="file" id="arq" accept=".xlsx,.xls" multiple hidden></label>
     <div id="fila"></div>
     <div class="sp"></div>
@@ -875,8 +1027,9 @@ async function adicionarArquivos(files) {
     try {
       const buf = await f.arrayBuffer();
       const wb = XLSX.read(buf, { type: 'array' });
-      item.r = Planilha.ler(wb, f.name, f.lastModified);
-      item.data = item.r.data; item.status = 'pronto';
+      const camp = lerCampanha(wb);
+      if (camp) { item.camp = camp; item.data = camp.mes; item.status = camp.itens.length ? 'pronto' : 'erro'; if (!camp.itens.length) item.erro = 'Lista sem produtos'; }
+      else { item.r = Planilha.ler(wb, f.name, f.lastModified); item.data = item.r.data; item.status = 'pronto'; }
     } catch (e) { item.status = 'erro'; item.erro = e.message; }
     desenharFila();
   }
@@ -892,28 +1045,35 @@ function desenharFila() {
     <thead><tr><th>Arquivo</th><th>Data dos preços</th><th>Cliente</th><th>Itens</th><th>Situação</th><th></th></tr></thead><tbody>
     ${S.fila.map(i => {
       const av = [];
-      if (i.status === 'pronto') {
+      if (i.status === 'pronto' && i.r) {
         if (i.r.origemData !== 'arquivo') av.push('Confira a data');
         if (datas.has(i.data)) av.push('Já importado: será substituído');
         if (ultimaFarm && i.r.farmacia && i.r.farmacia !== ultimaFarm) av.push('Cliente diferente da última planilha');
       }
       const st = { lendo: 'Lendo…', pronto: 'Pronto', erro: `<span class="st-err">${esc(i.erro || 'Erro')}</span>`, enviando: `<div class="prog"><i style="width:${Math.round(i.prog * 100)}%"></i></div>`, ok: '<span class="st-ok">Importado ✓</span>' }[i.status];
       return `<tr><td>${esc(i.nome)}</td>
-        <td>${i.r ? `<input type="date" value="${i.data}" data-fila="${i.id}" ${i.status === 'pronto' ? '' : 'disabled'}>` : '—'}</td>
-        <td>${esc(i.r?.farmacia || '—')}</td><td>${i.r ? i.r.produtos.length.toLocaleString('pt-BR') : '—'}</td>
+        <td>${i.camp ? `<input type="month" value="${i.data.slice(0, 7)}" data-fila="${i.id}" ${i.status === 'pronto' ? '' : 'disabled'}>`
+          : i.r ? `<input type="date" value="${i.data}" data-fila="${i.id}" ${i.status === 'pronto' ? '' : 'disabled'}>` : '—'}</td>
+        <td>${i.camp ? '<span class="tag t-prov">Lista Provendas</span>' : esc(i.r?.farmacia || '—')}</td>
+        <td>${i.camp ? i.camp.itens.length.toLocaleString('pt-BR') : i.r ? i.r.produtos.length.toLocaleString('pt-BR') : '—'}</td>
         <td>${st}${av.length ? `<div class="st-w">${av.join(' · ')}</div>` : ''}</td>
         <td>${i.status !== 'enviando' ? `<button class="rm" data-act="tirarFila" data-id="${i.id}" title="Tirar">${IC.x}</button>` : ''}</td></tr>`;
     }).join('')}</tbody></table></div>
+    ${S.fila.filter(i => i.rel).map(i => relatorioCampanha(i.rel)).join('')}
     <div class="acoes" style="padding-top:16px"><button class="btn btn-p" data-act="importar" ${prontos && !S.importando ? '' : 'disabled'}>${S.importando ? 'Importando…' : `Importar ${prontos} ${prontos === 1 ? 'planilha' : 'planilhas'}`}</button></div></div>`;
   el.querySelectorAll('input[data-fila]').forEach(inp => inp.onchange = e => {
     const it = S.fila.find(x => x.id === e.target.dataset.fila);
-    if (it && e.target.value) { it.data = e.target.value; it.r.origemData = 'arquivo'; desenharFila(); }
+    if (!it || !e.target.value) return;
+    if (it.camp) it.data = e.target.value + '-01'; else { it.data = e.target.value; it.r.origemData = 'arquivo'; }
+    desenharFila();
   });
 }
 
 async function importarFila() {
-  const prontos = S.fila.filter(i => i.status === 'pronto').sort((a, b) => a.data.localeCompare(b.data));
-  if (!prontos.length || S.importando) return;
+  const todosProntos = S.fila.filter(i => i.status === 'pronto');
+  const campanhas = todosProntos.filter(i => i.camp);
+  const prontos = todosProntos.filter(i => !i.camp).sort((a, b) => a.data.localeCompare(b.data));
+  if (!todosProntos.length || S.importando) return;
   const repetidas = prontos.map(i => i.data).filter((d, k, a) => a.indexOf(d) !== k);
   if (repetidas.length) return toast('Duas planilhas com a mesma data (' + dBR(repetidas[0], true) + '). Ajuste a data.', 5000);
   S.importando = true;
@@ -928,10 +1088,14 @@ async function importarFila() {
     } catch (e) { it.status = 'erro'; it.erro = e.message; }
     desenharFila();
   }
-  S.importando = false; desenharFila();
+  for (const it of campanhas) await importarCampanha(it);   // depois das planilhas de preço
+  S.importando = false; S.camp = null; desenharFila();
   await carregarPainel(); carregarDias();
   const ok = prontos.filter(i => i.status === 'ok').length;
-  if (ok) {
+  if (campanhas.some(i => i.status === 'ok')) {
+    toast('Lista Provendas importada. Confira o relatório.', 3500);
+    S.fila = S.fila.filter(i => i.status !== 'ok' || i.camp); desenharFila();
+  } else if (ok) {
     toast(`${ok} ${ok === 1 ? 'planilha importada' : 'planilhas importadas'}. Veja as ofertas!`, 3500);
     setTimeout(() => { S.fila = S.fila.filter(i => i.status !== 'ok'); if (S.aba === 'importar' && !S.fila.length) ir('hoje'); }, 1400);
   }
@@ -963,6 +1127,9 @@ async function onClick(e) {
     case 'vig': return alternarVigia(ean);
     case 'mais': S.limite += 300; return carregarItens();
     case 'todos': return marcarTodos();
+    case 'provForn': S.provForn = a.dataset.f; window.scrollTo(0, 0); return vProvendas();
+    case 'provVoltar': S.provForn = null; return vProvendas();
+    case 'provTodos': return provTodos();
     case 'rm': S.lista = S.lista.filter(x => x.ean !== ean); ls.set('lista', S.lista); S.textoEditado = false; navs(); return vLista();
     case 'limpar': if (confirm('Tirar todos os itens da lista?')) { S.lista = []; ls.set('lista', []); S.textoEditado = false; navs(); vLista(); } return;
     case 'regerar': S.textoEditado = false; S.texto = null; return vLista();
